@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os
+import os, json
 from Bio import SeqIO
 import numpy
 import matplotlib.pyplot as plt
@@ -9,15 +9,19 @@ output_dir = '../output/'
 files = os.listdir(data_dir)
 
 def parse(file):
-	print file
+	print 'Processing file: ' + str(file)
 	dictionary = {}
 	for data in SeqIO.parse(data_dir + str(file), 'fasta'):
 		# print data.id
 		# print data.seq
 		dictionary[data.id] = len(data)
 		# lis.append(len(data))
-	print max(dictionary.values())
+	print 'Longest seq: ' + str(max(dictionary.values()))
 	print dictionary.keys()[int(dictionary.values().index(max(dictionary.values())))]
+	print 'Shortest seq: ' + str(min(dictionary.values()))
+	print dictionary.keys()[int(dictionary.values().index(min(dictionary.values())))]
+	print 'Average seq length: ' + str(numpy.mean(dictionary.values()))
+	jsonify(dictionary)
 	plot_bar(dictionary)
 
 
@@ -30,9 +34,20 @@ def plot_bar(dictionary, location=None):
 	path_to_dir(figs)
 	filename = str(figs) + 'Distribution.png'
 	plt.figure().canvas.set_window_title('Distribution')
-	print(plt.hist(numpy.asarray(dictionary.values()), bins=100, log=True))
+	plt.hist(numpy.asarray(dictionary.values()), bins=100, log=True)
 	plt.savefig(filename)
 	plt.close()
+
+
+def jsonify(count, name=None):
+	a = json.dumps(count, sort_keys=True, indent=4, separators=(',', ': '))
+	if name == None:
+		with open(str(output_dir) + 'amino_acid_count.json', 'w') as outfile:
+			outfile.write(a)
+	else:
+		with open(str(output) + str(name) + '.json', 'w') as outfile:
+			outfile.write(a)
+	# print(a)
 
 
 def path_to_dir(out):
